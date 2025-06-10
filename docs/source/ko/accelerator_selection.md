@@ -16,18 +16,18 @@ rendered properly in your Markdown viewer.
 
 # 가속기 선택 [[accelerator-selection]]
 
-분산 훈련 중에 사용할 가속기(CUDA, XPU, MPS, HPU 등)의 개수와 순서를 지정할 수 있습니다. 이는 서로 다른 컴퓨팅 성능을 가진 가속기가 있고 더 빠른 가속기를 먼저 사용하고자 할 때 유용할 수 있습니다. 또는 사용 가능한 가속기 중 일부만 사용할 수도 있습니다. 선택 프로세스는 [DistributedDataParallel](https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html)과 [DataParallel](https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html) 모두에서 작동합니다. Accelerate나 [DeepSpeed integration](./main_classes/deepspeed)이 필요하지 않습니다.
+분산 훈련 중에는 사용할 가속기(CUDA, XPU, MPS, HPU 등)의 수와 순서를 지정할 수 있습니다. 이는 서로 다른 컴퓨팅 성능을 가진 가속기가 있고 더 빠른 가속기를 먼저 사용하고 싶을 때 유용할 수 있습니다. 또는 사용 가능한 가속기의 일부만 사용할 수도 있습니다. 선택 과정은 [DistributedDataParallel](https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html)과 [DataParallel](https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html) 모두에서 작동합니다. Accelerate나 [DeepSpeed integration](./main_classes/deepspeed)이 필요하지 않습니다.
 
-이 가이드는 사용할 가속기의 개수와 사용 순서를 선택하는 방법을 보여줍니다.
+이 가이드는 사용할 가속기의 수와 사용 순서를 선택하는 방법을 보여줍니다.
 
-## 가속기 개수 [[number-of-accelerators]]
+## 가속기 수 [[number-of-accelerators]]
 
 예를 들어, 4개의 가속기가 있고 처음 2개만 사용하고 싶다면 아래 명령을 실행하세요.
 
 <hfoptions id="select-accelerator">
 <hfoption id="torchrun">
 
-사용할 가속기 개수를 선택하려면 `--nproc_per_node`를 사용하세요.
+사용할 가속기 수를 선택하려면 `--nproc_per_node`를 사용하세요.
 
 ```bash
 torchrun --nproc_per_node=2  trainer-program.py ...
@@ -36,7 +36,7 @@ torchrun --nproc_per_node=2  trainer-program.py ...
 </hfoption>
 <hfoption id="Accelerate">
 
-사용할 가속기 개수를 선택하려면 `--num_processes`를 사용하세요.
+사용할 가속기 수를 선택하려면 `--num_processes`를 사용하세요.
 
 ```bash
 accelerate launch --num_processes 2 trainer-program.py ...
@@ -45,7 +45,7 @@ accelerate launch --num_processes 2 trainer-program.py ...
 </hfoption>
 <hfoption id="DeepSpeed">
 
-사용할 GPU 개수를 선택하려면 `--num_gpus`를 사용하세요.
+사용할 GPU 수를 선택하려면 `--num_gpus`를 사용하세요.
 
 ```bash
 deepspeed --num_gpus 2 trainer-program.py ...
@@ -55,7 +55,7 @@ deepspeed --num_gpus 2 trainer-program.py ...
 </hfoptions>
 
 ## 가속기 순서 [[order-of-accelerators]]
-사용할 특정 가속기와 그 순서를 선택하려면 하드웨어에 적합한 환경 변수를 사용하세요. 이는 종종 각 실행에 대해 명령줄에서 설정되지만, `~/.bashrc`나 다른 시작 설정 파일에 추가할 수도 있습니다.
+사용할 특정 가속기와 그 순서를 선택하려면 하드웨어에 적합한 환경 변수를 사용하세요. 이는 종종 각 실행마다 명령줄에서 설정되지만, `~/.bashrc`나 다른 시작 설정 파일에 추가할 수도 있습니다.
 
 예를 들어, 4개의 가속기(0, 1, 2, 3)가 있고 가속기 0과 2만 실행하고 싶다면:
 
@@ -66,8 +66,8 @@ deepspeed --num_gpus 2 trainer-program.py ...
 CUDA_VISIBLE_DEVICES=0,2 torchrun trainer-program.py ...
 ```
 
-오직 GPU 0과 2만 PyTorch에서 "보이며" 각각 `cuda:0`과 `cuda:1`로 매핑됩니다.  
-순서를 뒤바꾸려면 (GPU 2를 `cuda:0`으로, GPU 0을 `cuda:1`로 사용):
+GPU 0과 2만 PyTorch에서 "보이며" 각각 `cuda:0`과 `cuda:1`로 매핑됩니다.  
+순서를 바꾸려면 (GPU 2를 `cuda:0`으로, GPU 0을 `cuda:1`로 사용):
 
 
 ```bash
@@ -101,15 +101,15 @@ $hf_i18n_placeholder21export CUDA_DEVICE_ORDER=PCI_BUS_ID
 ZE_AFFINITY_MASK=0,2 torchrun trainer-program.py ...
 ```
 
-오직 XPU 0과 2만 PyTorch에서 "보이며" 각각 `xpu:0`과 `xpu:1`로 매핑됩니다.  
-순서를 뒤바꾸려면 (XPU 2를 `xpu:0`으로, XPU 0을 `xpu:1`로 사용):
+XPU 0과 2만 PyTorch에서 "보이며" 각각 `xpu:0`과 `xpu:1`로 매핑됩니다.  
+순서를 바꾸려면 (XPU 2를 `xpu:0`으로, XPU 0을 `xpu:1`로 사용):
 
 ```bash
 ZE_AFFINITY_MASK=2,0 torchrun trainer-program.py ...
 ```
 
 
-다음과 같이 Intel XPU의 순서를 제어할 수도 있습니다:
+다음으로 Intel XPU의 순서를 제어할 수도 있습니다:
 
 ```bash
 export ZE_ENABLE_PCI_ID_DEVICE_ORDER=1
@@ -123,5 +123,5 @@ Intel XPU에서의 장치 열거 및 정렬에 대한 자세한 정보는 [Level
 
 
 > [!WARNING]
-> 환경 변수는 명령줄에 추가하는 대신 export할 수 있습니다. 환경 변수가 어떻게 설정되었는지 잊어버리고 잘못된 가속기를 사용하게 될 경우 혼란스러울 수 있으므로 이는 권장되지 않습니다. 대신, 같은 명령줄에서 특정 훈련 실행에 대해 환경 변수를 설정하는 것이 일반적인 관례입니다.
+> 환경 변수는 명령줄에 추가하는 대신 내보낼 수 있습니다. 환경 변수가 어떻게 설정되었는지 잊어버리면 혼란스러울 수 있고 잘못된 가속기를 사용하게 될 수 있으므로 이는 권장되지 않습니다. 대신, 특정 훈련 실행을 위해 같은 명령줄에서 환경 변수를 설정하는 것이 일반적인 관행입니다.
 ```
